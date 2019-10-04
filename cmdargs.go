@@ -16,7 +16,7 @@ func parseArgs(input *ipset) {
 	flag.Parse()
 	if len(os.Args) <= 1 {
 		flag.PrintDefaults()
-		fmt.Println("go-ibc version: ", Version)
+		fmt.Println("go-ibc version: ", version)
 		fmt.Println("golang compile version: ", runtime.Version())
 	}
 	if v4 == "" && v6 == "" {

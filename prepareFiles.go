@@ -13,7 +13,7 @@ import (
 
 func initDownload() (bsdir, dir string) {
 	dir = prepareDir("")
-	path := (download(dir))
+	path := download(dir)
 	bsdir = unzip(dir, path)
 	return
 }
@@ -26,7 +26,7 @@ func prepareDir(basedir string) (dir string) {
 
 func download(dir string) (path string) {
 	httpClient := http.Client{}
-	resp, err := httpClient.Get(RepoZipURL)
+	resp, err := httpClient.Get(repoZipURL)
 	evalErr(err)
 	defer resp.Body.Close()
 	file, err := os.Create(filepath.Join(dir, "master.zip"))
@@ -50,13 +50,14 @@ func unzip(dir, path string) (tmpdir string) {
 			if !strings.HasPrefix(tmppath, filepath.Clean(tmpdir)+string(os.PathSeparator)) {
 				log.Fatalln("Error: Blocking Relative Path, which  is included in Zip !")
 			}
-			zippedFile, err := file.Open()
-			evalErr(err)
-			defer zippedFile.Close()
-			fs, err := os.Create(tmppath)
-			evalErr(err)
-			_, err = io.Copy(fs, zippedFile)
-			evalErr(err)
+			zippedFile, err0 := file.Open()
+			evalErr(err0)
+			fs, err1 := os.Create(tmppath)
+			evalErr(err1)
+			_, err2 := io.Copy(fs, zippedFile)
+			evalErr(err2)
+			err3 := zippedFile.Close()
+			evalErr(err3)
 		}
 	}
 	return

@@ -21,7 +21,7 @@ func evalErrSoft(err error) {
 }
 */
 
-type ListEntry struct {
+type listEntry struct {
 	maintainer string
 	url        string
 	category   string
@@ -30,7 +30,7 @@ type ListEntry struct {
 	release    bool
 }
 
-func scannerIpset(scnr *bufio.Scanner, ips *ipset) (match ListEntry) {
+func scannerIpset(scnr *bufio.Scanner, ips *ipset) (match listEntry) {
 	match.match = false
 	match.release = false
 	for scnr.Scan() {
@@ -60,7 +60,7 @@ func scannerIpset(scnr *bufio.Scanner, ips *ipset) (match ListEntry) {
 	return
 }
 
-func scannerNetset(scnr *bufio.Scanner, ips *ipset) (match ListEntry) {
+func scannerNetset(scnr *bufio.Scanner, ips *ipset) (match listEntry) {
 	match.match = false
 	match.release = false
 	for scnr.Scan() {

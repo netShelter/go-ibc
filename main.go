@@ -15,5 +15,6 @@ func main() {
 	parseArgs(&input)
 	fmt.Println("IPv4: ", input.ipv4)
 	fmt.Println("Ipv6: ", input.ipv6)
-	initDownload()
+	bsdir, dir := initDownload()
+	checkIPs(bsdir, dir, &input)
 }

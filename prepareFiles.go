@@ -11,11 +11,10 @@ import (
 	"strings"
 )
 
-func initDownload() (dir string) {
+func initDownload() (bsdir, dir string) {
 	dir = prepareDir("")
-	defer os.RemoveAll(dir)
 	path := (download(dir))
-	unzip(dir, path)
+	bsdir = unzip(dir, path)
 	return
 }
 
@@ -39,11 +38,11 @@ func download(dir string) (path string) {
 	return
 }
 
-func unzip(dir, path string) {
+func unzip(dir, path string) (tmpdir string) {
 	files, err := zip.OpenReader(path)
 	evalErr(err)
 	defer files.Close()
-	tmpdir := prepareDir(dir)
+	tmpdir = prepareDir(dir)
 
 	for _, file := range files.File {
 		if (strings.HasSuffix(file.Name, ".netset") || strings.HasSuffix(file.Name, ".ipset")) && !file.FileInfo().IsDir() {
@@ -60,4 +59,5 @@ func unzip(dir, path string) {
 			evalErr(err)
 		}
 	}
+	return
 }

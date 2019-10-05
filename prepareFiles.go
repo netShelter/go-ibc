@@ -11,11 +11,10 @@ import (
 	"strings"
 )
 
-func initDownload() (dir string) {
+func initDownload() (bsdir, dir string) {
 	dir = prepareDir("")
-	defer os.RemoveAll(dir)
-	path := (download(dir))
-	unzip(dir, path)
+	path := download(dir)
+	bsdir = unzip(dir, path)
 	return
 }
 
@@ -27,7 +26,7 @@ func prepareDir(basedir string) (dir string) {
 
 func download(dir string) (path string) {
 	httpClient := http.Client{}
-	resp, err := httpClient.Get(RepoZipURL)
+	resp, err := httpClient.Get(repoZipURL)
 	evalErr(err)
 	defer resp.Body.Close()
 	file, err := os.Create(filepath.Join(dir, "master.zip"))
@@ -39,11 +38,11 @@ func download(dir string) (path string) {
 	return
 }
 
-func unzip(dir, path string) {
-	files, err := zip.OpenReader(path)
-	evalErr(err)
+func unzip(dir, path string) (tmpdir string) {
+	files, err0 := zip.OpenReader(path)
+	evalErr(err0)
 	defer files.Close()
-	tmpdir := prepareDir(dir)
+	tmpdir = prepareDir(dir)
 
 	for _, file := range files.File {
 		if (strings.HasSuffix(file.Name, ".netset") || strings.HasSuffix(file.Name, ".ipset")) && !file.FileInfo().IsDir() {
@@ -51,13 +50,17 @@ func unzip(dir, path string) {
 			if !strings.HasPrefix(tmppath, filepath.Clean(tmpdir)+string(os.PathSeparator)) {
 				log.Fatalln("Error: Blocking Relative Path, which  is included in Zip !")
 			}
-			zippedFile, err := file.Open()
-			evalErr(err)
-			defer zippedFile.Close()
-			fs, err := os.Create(tmppath)
-			evalErr(err)
-			_, err = io.Copy(fs, zippedFile)
-			evalErr(err)
+			zippedFile, err1 := file.Open()
+			evalErr(err1)
+			fs, err2 := os.Create(tmppath)
+			evalErr(err2)
+			_, err3 := io.Copy(fs, zippedFile)
+			evalErr(err3)
+			err4 := zippedFile.Close()
+			evalErr(err4)
 		}
 	}
+	err1 := os.Remove(path)
+	evalErr(err1)
+	return
 }

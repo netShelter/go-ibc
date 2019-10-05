@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net"
 	"os"
+	"runtime"
 )
 
 func parseArgs(input *ipset) {
@@ -14,6 +16,8 @@ func parseArgs(input *ipset) {
 	flag.Parse()
 	if len(os.Args) <= 1 {
 		flag.PrintDefaults()
+		fmt.Println("go-ibc version: ", version)
+		fmt.Println("golang compile version: ", runtime.Version())
 	}
 	if v4 == "" && v6 == "" {
 		log.Fatalln("Error: Not enough arguments given !")

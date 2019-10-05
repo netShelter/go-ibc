@@ -32,7 +32,7 @@ func checkIPs(basedir, dir string, ips *ipset) {
 	//time.Sleep(2 * time.Second)
 
 	//Start output worker
-	go outputWorker(dir, in, out, &worker)
+	go outputWorker(dir, basedir, in, out, &worker)
 
 	worker.Wait()
 	close(in)
@@ -65,13 +65,15 @@ func compareWorker(in chan string, out chan listEntry, ips *ipset) {
 		}
 		err0 := file.Close()
 		evalErr(err0)
+		err1 := os.Remove(file.Name())
+		evalErr(err1)
 	}
 }
 
-func outputWorker(dir string, in chan string, out chan listEntry, worker *sync.WaitGroup) {
+func outputWorker(bsdir, dir string, in chan string, out chan listEntry, worker *sync.WaitGroup) {
 	worker.Add(1)
 
-	go releaseWorker(in, out)
+	go releaseWorker(dir, in, out)
 
 	for {
 		output := <-out
@@ -83,16 +85,18 @@ func outputWorker(dir string, in chan string, out chan listEntry, worker *sync.W
 
 			// Due to initial increment of waitgroup to block while executing workers
 			worker.Done()
-			os.RemoveAll(dir)
+			err0 := os.Remove(dir)
+			evalErr(err0)
+			err1 := os.Remove(bsdir)
+			evalErr(err1)
 			return
-			//break
 		}
 	}
 }
 
-func releaseWorker(in chan string, out chan listEntry) {
+func releaseWorker(dir string, in chan string, out chan listEntry) {
 	for {
-		if len(out) == 0 && len(in) == 0 {
+		if files, _ := ioutil.ReadDir(dir); len(out) == 0 && len(in) == 0 && len(files) == 0 {
 			tmp := listEntry{}
 			tmp.release = true
 			out <- tmp

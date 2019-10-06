@@ -40,7 +40,7 @@ func scannerIpset(scnr *bufio.Scanner, ips *ipset) (match listEntry) {
 				match.maintainer = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Maintainer"), ":", ""))
 			}
 			if strings.HasPrefix(scnr.Text(), "# List source URL") {
-				match.url = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# List source URL"), ":", ""))
+				match.url = strings.TrimSpace(strings.Replace(strings.TrimPrefix(scnr.Text(), "# List source URL"), ":", "", 1))
 			}
 			if strings.HasPrefix(scnr.Text(), "# Category") {
 				match.category = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Category"), ":", ""))
@@ -70,7 +70,7 @@ func scannerNetset(scnr *bufio.Scanner, ips *ipset) (match listEntry) {
 				match.maintainer = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Maintainer"), ":", ""))
 			}
 			if strings.HasPrefix(scnr.Text(), "# List source URL") {
-				match.url = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# List source URL"), ":", ""))
+				match.url = strings.TrimSpace(strings.Replace(strings.TrimPrefix(scnr.Text(), "# List source URL"), ":", "", 1))
 			}
 			if strings.HasPrefix(scnr.Text(), "# Category") {
 				match.category = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Category"), ":", ""))

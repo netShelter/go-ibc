@@ -4,33 +4,29 @@ import (
 	"bufio"
 	"log"
 	"net"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
-func evalErr(err error) {
+func evalErr(err error, args ...string) {
 	if err != nil {
-		log.Fatalln("Error:", err)
+		log.Fatalln("Error:", err, args)
 	}
 }
-
-/*
-func evalErrSoft(err error) {
-	if err != nil {
-		log.Println("Error:", err)
-	}
-}
-*/
 
 type listEntry struct {
+	list       string
 	maintainer string
 	url        string
 	category   string
+	country    string
 	ip         string
 	match      bool
 	release    bool
 }
 
-func scannerIpset(scnr *bufio.Scanner, ips *ipset) (match listEntry) {
+func scannerIpset(scnr *bufio.Scanner, ips *ipset, file *os.File) (match listEntry) {
 	match.match = false
 	match.release = false
 	for scnr.Scan() {
@@ -45,6 +41,9 @@ func scannerIpset(scnr *bufio.Scanner, ips *ipset) (match listEntry) {
 			if strings.HasPrefix(scnr.Text(), "# Category") {
 				match.category = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Category"), ":", ""))
 			}
+
+			// Parse Listname
+			match.list = strings.TrimSuffix(strings.TrimSuffix(filepath.Base(file.Name()), ".netset"), ".ipset")
 		case scnr.Bytes()[0] == 0x04:
 			break
 		default:
@@ -52,15 +51,15 @@ func scannerIpset(scnr *bufio.Scanner, ips *ipset) (match listEntry) {
 				if parsedIP.Equal(ips.ipv4) || parsedIP.Equal(ips.ipv6) {
 					match.match = true
 					match.ip = parsedIP.String()
-					return
+					return match
 				}
 			}
 		}
 	}
-	return
+	return match
 }
 
-func scannerNetset(scnr *bufio.Scanner, ips *ipset) (match listEntry) {
+func scannerNetset(scnr *bufio.Scanner, ips *ipset, file *os.File) (match listEntry) {
 	match.match = false
 	match.release = false
 	for scnr.Scan() {
@@ -75,6 +74,17 @@ func scannerNetset(scnr *bufio.Scanner, ips *ipset) (match listEntry) {
 			if strings.HasPrefix(scnr.Text(), "# Category") {
 				match.category = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Category"), ":", ""))
 			}
+
+			// Parse geolocation to country
+			if match.category == "geolocation" {
+				tmp0 := strings.TrimSuffix(filepath.Base(file.Name()), ".netset")
+				tmp1 := strings.Split(tmp0, "_")
+				match.country = strings.ToUpper(tmp1[len(tmp1)-1])
+			}
+
+			// Parse Listname
+			match.list = strings.TrimSuffix(strings.TrimSuffix(filepath.Base(file.Name()), ".netset"), ".ipset")
+
 		case scnr.Bytes()[0] == 0x04:
 			break
 		default:
@@ -82,9 +92,9 @@ func scannerNetset(scnr *bufio.Scanner, ips *ipset) (match listEntry) {
 			if err == nil && (parsedNet.Contains(ips.ipv4) || parsedNet.Contains(ips.ipv6)) {
 				match.match = true
 				match.ip = parsedNet.String()
-				return
+				return match
 			}
 		}
 	}
-	return
+	return match
 }

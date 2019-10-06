@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func checkIPs(basedir, dir string, ips *ipset) {
+func checkIPs(dir string, ips *ipset) {
 	//Make input and output channel and waitgroup
 	in := make(chan string, 2000)
 	out := make(chan listEntry, 2000)
@@ -21,18 +21,18 @@ func checkIPs(basedir, dir string, ips *ipset) {
 	worker.Add(1)
 
 	//Start insertworker
-	inputWorker(basedir, in, &worker)
+	inputWorker(dir, in, &worker)
 
-	//time.Sleep(2 * time.Second)
+	time.Sleep(2 * time.Second)
 	//Start fileworker
 	for i := 0; i < runtime.NumCPU(); i++ {
 		go compareWorker(in, out, ips)
 	}
 
-	//time.Sleep(2 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	//Start output worker
-	go outputWorker(dir, basedir, in, out, &worker)
+	go outputWorker(in, out, &worker)
 
 	worker.Wait()
 	close(in)
@@ -42,7 +42,7 @@ func checkIPs(basedir, dir string, ips *ipset) {
 func inputWorker(dir string, in chan string, worker *sync.WaitGroup) {
 	worker.Add(1)
 	files, err := ioutil.ReadDir(dir)
-	evalErr(err)
+	evalErr(err, dir)
 	defer worker.Done()
 	for _, file := range files {
 		if !file.IsDir() && file.Name() != "" {
@@ -55,48 +55,48 @@ func compareWorker(in chan string, out chan listEntry, ips *ipset) {
 	for {
 		path := <-in
 		file, err := os.Open(path)
-		evalErr(err)
+		evalErr(err, path)
 		scnr := bufio.NewScanner(file)
 		if strings.HasSuffix(path, "ipset") {
-			out <- scannerIpset(scnr, ips)
+			out <- scannerIpset(scnr, ips, file)
 		}
 		if strings.HasSuffix(path, "netset") {
-			out <- scannerNetset(scnr, ips)
+			out <- scannerNetset(scnr, ips, file)
 		}
 		err0 := file.Close()
-		evalErr(err0)
-		err1 := os.Remove(file.Name())
-		evalErr(err1)
+		evalErr(err0, file.Name())
 	}
 }
 
-func outputWorker(bsdir, dir string, in chan string, out chan listEntry, worker *sync.WaitGroup) {
+func outputWorker(in chan string, out chan listEntry, worker *sync.WaitGroup) {
 	worker.Add(1)
-
-	go releaseWorker(dir, in, out)
+	go releaseWorker(in, out)
 
 	for {
 		output := <-out
 		if output.match {
-			fmt.Println("IP: " + output.ip + " found in Category: " + output.category + " in List: " + output.url)
+			switch output.category {
+			case "geolocation":
+				fmt.Println("IP:" + output.ip + " | List: " + output.list + " | Country: " +
+					output.country + " | URL: " + output.url)
+			default:
+				fmt.Println("IP:" + output.ip + " | List: " + output.list + " | Category: " +
+					output.category + " | URL: " + output.url)
+			}
 		}
 		if output.release {
 			worker.Done()
 
 			// Due to initial increment of waitgroup to block while executing workers
 			worker.Done()
-			err0 := os.Remove(dir)
-			evalErr(err0)
-			err1 := os.Remove(bsdir)
-			evalErr(err1)
 			return
 		}
 	}
 }
 
-func releaseWorker(dir string, in chan string, out chan listEntry) {
+func releaseWorker(in chan string, out chan listEntry) {
 	for {
-		if files, _ := ioutil.ReadDir(dir); len(out) == 0 && len(in) == 0 && len(files) == 0 {
+		if len(out) == 0 && len(in) == 0 {
 			tmp := listEntry{}
 			tmp.release = true
 			out <- tmp

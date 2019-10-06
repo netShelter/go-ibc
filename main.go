@@ -12,6 +12,6 @@ type ipset struct {
 func main() {
 	input := ipset{}
 	parseArgs(&input)
-	bsdir, dir := initDownload()
-	checkIPs(bsdir, dir, &input)
+	_, dir := initDownload()
+	checkIPs(dir, &input)
 }

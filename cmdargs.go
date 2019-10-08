@@ -1,36 +1,32 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net"
-	"os"
 	"runtime"
 )
 
-func parseArgs(input *ipset) {
-	var v4, v6 string
-	flag.StringVar(&v4, "ipv4", "", "IPv4 Address")
-	flag.StringVar(&v6, "ipv6", "", "IPv6 Address")
-	flag.Parse()
-	if len(os.Args) <= 1 {
-		flag.PrintDefaults()
-		fmt.Println("go-ibc version: ", version)
-		fmt.Println("golang compile version: ", runtime.Version())
+func parseArgs(args []string) (inputIP net.IP) {
+	var incomingIP string
+
+	for index := 0; index < len(args)-1; index++ {
+		incomingIP = args[index+1]
+		inputIP = net.ParseIP(incomingIP)
+		if inputIP != nil {
+			return
+		}
 	}
-	if v4 == "" && v6 == "" {
+
+	if len(args) <= 1 {
+		fmt.Println("Use of go-ibc:\n\ngo-ibc IP-ADDRESS")
+		fmt.Println("IP-ADDRESS can be an valid IPv4 or IPv6 Address\nCIDR Notation is not supported")
+		fmt.Printf("\ngo-ibc: %s build: %s\n", version, runtime.Version())
+	}
+
+	if incomingIP == "" {
 		log.Fatalln("Error: Not enough arguments given !")
 	}
 
-	input.ipv4 = net.ParseIP(v4)
-	input.ipv6 = net.ParseIP(v6)
-
-	if input.ipv4 == nil && v4 != "" {
-		log.Fatalln("Error: IPv4 Address invalid")
-	}
-
-	if input.ipv6 == nil && v6 != "" {
-		log.Fatalln("Error: IPv6 Address invalid")
-	}
+	return
 }

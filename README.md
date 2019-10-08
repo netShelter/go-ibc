@@ -14,7 +14,10 @@ go get -u github.com/netShelter/go-ibc
 ## Using the tool
 
 ```
-go-ibc --ipv4 127.0.0.1 --ipv6 ::1
+go-ibc 127.0.0.1
+```
+```
+go-ibc ::1
 ```
 
 ## License

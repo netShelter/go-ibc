@@ -11,12 +11,12 @@ import (
 	"strings"
 )
 
-func initDownload() (bsdir, dir string) {
+func initDownload() (dir string) {
 	files0, err0 := ioutil.ReadDir(os.TempDir())
 	evalErr(err0)
 	for _, file0 := range files0 {
 		if file0.IsDir() && strings.HasPrefix(filepath.Base(filepath.Join(os.TempDir(), file0.Name())), prefix) {
-			bsdir = filepath.Join(os.TempDir(), file0.Name())
+			bsdir := filepath.Join(os.TempDir(), file0.Name())
 			files1, err1 := ioutil.ReadDir(bsdir)
 			evalErr(err1)
 			for _, file1 := range files1 {
@@ -31,7 +31,7 @@ func initDownload() (bsdir, dir string) {
 			}
 		}
 	}
-	bsdir = prepareDir("")
+	bsdir := prepareDir("")
 	path := download(bsdir)
 	dir = unzip(bsdir, path)
 

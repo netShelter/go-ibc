@@ -1,17 +1,11 @@
 package main
 
 import (
-	"net"
+	"os"
 )
 
-type ipset struct {
-	ipv4 net.IP
-	ipv6 net.IP
-}
-
 func main() {
-	input := ipset{}
-	parseArgs(&input)
-	_, dir := initDownload()
-	checkIPs(dir, &input)
+	input := parseArgs(os.Args)
+	dir := initDownload()
+	checkIPs(dir, input)
 }

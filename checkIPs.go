@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,7 +13,7 @@ import (
 	"time"
 )
 
-func checkIPs(dir string, ips *ipset) {
+func checkIPs(dir string, ips net.IP) {
 	//Make input and output channel and waitgroup
 	in := make(chan string, 2000)
 	out := make(chan listEntry, 2000)
@@ -51,7 +52,7 @@ func inputWorker(dir string, in chan string, worker *sync.WaitGroup) {
 	}
 }
 
-func compareWorker(in chan string, out chan listEntry, ips *ipset) {
+func compareWorker(in chan string, out chan listEntry, ips net.IP) {
 	for {
 		path := <-in
 		file, err := os.Open(path)

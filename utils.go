@@ -26,7 +26,7 @@ type listEntry struct {
 	release    bool
 }
 
-func scannerIpset(scnr *bufio.Scanner, ips *ipset, file *os.File) (match listEntry) {
+func scannerIpset(scnr *bufio.Scanner, ips net.IP, file *os.File) (match listEntry) {
 	match.match = false
 	match.release = false
 	for scnr.Scan() {
@@ -48,7 +48,7 @@ func scannerIpset(scnr *bufio.Scanner, ips *ipset, file *os.File) (match listEnt
 			break
 		default:
 			if parsedIP := net.ParseIP(scnr.Text()); parsedIP != nil {
-				if parsedIP.Equal(ips.ipv4) || parsedIP.Equal(ips.ipv6) {
+				if parsedIP.Equal(ips) {
 					match.match = true
 					match.ip = parsedIP.String()
 					return match
@@ -59,7 +59,7 @@ func scannerIpset(scnr *bufio.Scanner, ips *ipset, file *os.File) (match listEnt
 	return match
 }
 
-func scannerNetset(scnr *bufio.Scanner, ips *ipset, file *os.File) (match listEntry) {
+func scannerNetset(scnr *bufio.Scanner, ips net.IP, file *os.File) (match listEntry) {
 	match.match = false
 	match.release = false
 	for scnr.Scan() {
@@ -89,7 +89,7 @@ func scannerNetset(scnr *bufio.Scanner, ips *ipset, file *os.File) (match listEn
 			break
 		default:
 			_, parsedNet, err := net.ParseCIDR(scnr.Text())
-			if err == nil && (parsedNet.Contains(ips.ipv4) || parsedNet.Contains(ips.ipv6)) {
+			if err == nil && parsedNet.Contains(ips) {
 				match.match = true
 				match.ip = parsedNet.String()
 				return match

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func BenchmarkParsing(b *testing.B) { //nolint:deadcode
+func BenchmarkParsingIPv4(b *testing.B) { //nolint:deadcode
 	b.ReportAllocs()
 	var inputIP net.IP
 	b.ResetTimer()
@@ -20,10 +20,22 @@ func BenchmarkParsing(b *testing.B) { //nolint:deadcode
 	}
 }
 
+func BenchmarkParsingIPv6(b *testing.B) { //nolint:deadcode
+	b.ReportAllocs()
+	var inputIP net.IP
+	b.ResetTimer()
+	for index := 0; index < b.N; index++ {
+		inputIP = parseArgs([]string{os.Args[0], "2606:4700:4700::1111"})
+	}
+	b.StopTimer()
+	result := inputIP
+	if result == nil {
+		b.Fail()
+	}
+}
+
 func BenchmarkInitialDownload(b *testing.B) { //nolint:deadcode
 	b.ReportAllocs()
-	parseArgs([]string{os.Args[0], "--ipv4", "1.1.1.1"})
-	b.ResetTimer()
 	for index := 0; index < b.N; index++ {
 		initDownload()
 	}
@@ -31,7 +43,7 @@ func BenchmarkInitialDownload(b *testing.B) { //nolint:deadcode
 
 func BenchmarkAfterInitialDownload(b *testing.B) { //nolint:deadcode
 	b.ReportAllocs()
-	parseArgs([]string{os.Args[0], "--ipv4", "1.1.1.1"})
+	parseArgs([]string{os.Args[0], "1.1.1.1"})
 	b.ResetTimer()
 	for index := 0; index < b.N; index++ {
 		initDownload()

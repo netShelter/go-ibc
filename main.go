@@ -6,6 +6,10 @@ import (
 
 func main() {
 	argset := parseArgs(os.Args)
-	dir := initDownload()
-	checkIPs(dir, argset)
+	dir := getBlocklistFilesFromSource()
+	processGivenData(dir, argset)
+}
+
+func processGivenData(dir string, argset argumentSet) {
+	startWorker(dir, argset)
 }

@@ -12,40 +12,37 @@ import (
 	"time"
 )
 
-func checkIPs(dir string, argset argumentSet) {
-	//Make input and output channel and waitgroup
+func startWorker(dir string, argset argumentSet) {
 	in := make(chan string, 2000)
 	out := make(chan listEntry, 2000)
-	worker := sync.WaitGroup{}
+	workerWG := sync.WaitGroup{}
 
-	worker.Add(1)
+	workerWG.Add(1)
 
-	//Start insertworker
-	inputWorker(dir, in, &worker)
+	inputWorker(dir, in, &workerWG)
 
 	time.Sleep(2 * time.Second)
-	//Start fileworker
+
 	for i := 0; i < runtime.NumCPU(); i++ {
 		go compareWorker(in, out, argset)
 	}
 
 	time.Sleep(2 * time.Second)
 
-	//Start output worker
-	go outputWorker(in, out, &worker)
+	go outputWorker(in, out, &workerWG)
 
-	worker.Wait()
+	workerWG.Wait()
 	close(in)
 	close(out)
 }
 
-func inputWorker(dir string, in chan string, worker *sync.WaitGroup) {
-	worker.Add(1)
+func inputWorker(dir string, in chan string, workerWG *sync.WaitGroup) {
+	workerWG.Add(1)
 
 	files, err := ioutil.ReadDir(dir)
 	evalErr(err, dir)
 
-	defer worker.Done()
+	defer workerWG.Done()
 
 	for _, file := range files {
 		if !file.IsDir() && file.Name() != "" {
@@ -75,8 +72,8 @@ func compareWorker(in chan string, out chan listEntry, argset argumentSet) {
 	}
 }
 
-func outputWorker(in chan string, out chan listEntry, worker *sync.WaitGroup) {
-	worker.Add(1)
+func outputWorker(in chan string, out chan listEntry, workerWG *sync.WaitGroup) {
+	workerWG.Add(1)
 
 	go releaseWorker(in, out)
 
@@ -94,10 +91,10 @@ func outputWorker(in chan string, out chan listEntry, worker *sync.WaitGroup) {
 		}
 
 		if output.release {
-			worker.Done()
+			workerWG.Done()
 
 			// Due to initial increment of waitgroup to block while executing workers
-			worker.Done()
+			workerWG.Done()
 
 			return
 		}

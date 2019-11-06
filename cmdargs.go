@@ -7,10 +7,6 @@ import (
 	"runtime"
 )
 
-type argumentSet struct {
-	inputIP net.IP
-}
-
 func parseArgs(args []string) (argset argumentSet) {
 	var incomingIP string
 

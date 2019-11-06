@@ -15,17 +15,6 @@ func evalErr(err error, args ...string) {
 	}
 }
 
-type listEntry struct {
-	list       string
-	maintainer string
-	url        string
-	category   string
-	country    string
-	ip         string
-	match      bool
-	release    bool
-}
-
 func scannerIpset(scnr *bufio.Scanner, argset argumentSet, file *os.File) (match listEntry) {
 	match.match = false
 	match.release = false

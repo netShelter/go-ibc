@@ -47,7 +47,7 @@ func BenchmarkInitialDownload(b *testing.B) { //nolint:deadcode
 	b.ReportAllocs()
 
 	for index := 0; index < b.N; index++ {
-		initDownload()
+		getBlocklistFilesFromSource()
 	}
 }
 
@@ -57,6 +57,6 @@ func BenchmarkAfterInitialDownload(b *testing.B) { //nolint:deadcode
 	b.ResetTimer()
 
 	for index := 0; index < b.N; index++ {
-		initDownload()
+		getBlocklistFilesFromSource()
 	}
 }

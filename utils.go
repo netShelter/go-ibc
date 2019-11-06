@@ -29,15 +29,18 @@ type listEntry struct {
 func scannerIpset(scnr *bufio.Scanner, ips net.IP, file *os.File) (match listEntry) {
 	match.match = false
 	match.release = false
+
 	for scnr.Scan() {
 		switch {
 		case strings.HasPrefix(scnr.Text(), "#"):
 			if strings.HasPrefix(scnr.Text(), "# Maintainer  ") {
 				match.maintainer = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Maintainer"), ":", ""))
 			}
+
 			if strings.HasPrefix(scnr.Text(), "# List source URL") {
 				match.url = strings.TrimSpace(strings.Replace(strings.TrimPrefix(scnr.Text(), "# List source URL"), ":", "", 1))
 			}
+
 			if strings.HasPrefix(scnr.Text(), "# Category") {
 				match.category = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Category"), ":", ""))
 			}
@@ -51,26 +54,31 @@ func scannerIpset(scnr *bufio.Scanner, ips net.IP, file *os.File) (match listEnt
 				if parsedIP.Equal(ips) {
 					match.match = true
 					match.ip = parsedIP.String()
+
 					return match
 				}
 			}
 		}
 	}
+
 	return match
 }
 
 func scannerNetset(scnr *bufio.Scanner, ips net.IP, file *os.File) (match listEntry) {
 	match.match = false
 	match.release = false
+
 	for scnr.Scan() {
 		switch {
 		case strings.HasPrefix(scnr.Text(), "#"):
 			if strings.HasPrefix(scnr.Text(), "# Maintainer  ") {
 				match.maintainer = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Maintainer"), ":", ""))
 			}
+
 			if strings.HasPrefix(scnr.Text(), "# List source URL") {
 				match.url = strings.TrimSpace(strings.Replace(strings.TrimPrefix(scnr.Text(), "# List source URL"), ":", "", 1))
 			}
+
 			if strings.HasPrefix(scnr.Text(), "# Category") {
 				match.category = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Category"), ":", ""))
 			}
@@ -92,9 +100,11 @@ func scannerNetset(scnr *bufio.Scanner, ips net.IP, file *os.File) (match listEn
 			if err == nil && parsedNet.Contains(ips) {
 				match.match = true
 				match.ip = parsedNet.String()
+
 				return match
 			}
 		}
 	}
+
 	return match
 }

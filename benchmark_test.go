@@ -8,13 +8,18 @@ import (
 
 func BenchmarkParsingIPv4(b *testing.B) { //nolint:deadcode
 	b.ReportAllocs()
+
 	var inputIP net.IP
+
 	b.ResetTimer()
+
 	for index := 0; index < b.N; index++ {
 		inputIP = parseArgs([]string{os.Args[0], "1.1.1.1"})
 	}
 	b.StopTimer()
+
 	result := inputIP
+
 	if result == nil {
 		b.Fail()
 	}
@@ -22,13 +27,18 @@ func BenchmarkParsingIPv4(b *testing.B) { //nolint:deadcode
 
 func BenchmarkParsingIPv6(b *testing.B) { //nolint:deadcode
 	b.ReportAllocs()
+
 	var inputIP net.IP
+
 	b.ResetTimer()
+
 	for index := 0; index < b.N; index++ {
 		inputIP = parseArgs([]string{os.Args[0], "2606:4700:4700::1111"})
 	}
 	b.StopTimer()
+
 	result := inputIP
+
 	if result == nil {
 		b.Fail()
 	}
@@ -36,6 +46,7 @@ func BenchmarkParsingIPv6(b *testing.B) { //nolint:deadcode
 
 func BenchmarkInitialDownload(b *testing.B) { //nolint:deadcode
 	b.ReportAllocs()
+
 	for index := 0; index < b.N; index++ {
 		initDownload()
 	}
@@ -45,6 +56,7 @@ func BenchmarkAfterInitialDownload(b *testing.B) { //nolint:deadcode
 	b.ReportAllocs()
 	parseArgs([]string{os.Args[0], "1.1.1.1"})
 	b.ResetTimer()
+
 	for index := 0; index < b.N; index++ {
 		initDownload()
 	}

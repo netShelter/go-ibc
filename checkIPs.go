@@ -42,9 +42,12 @@ func checkIPs(dir string, ips net.IP) {
 
 func inputWorker(dir string, in chan string, worker *sync.WaitGroup) {
 	worker.Add(1)
+
 	files, err := ioutil.ReadDir(dir)
 	evalErr(err, dir)
+
 	defer worker.Done()
+
 	for _, file := range files {
 		if !file.IsDir() && file.Name() != "" {
 			in <- filepath.Join(dir, file.Name())
@@ -57,13 +60,17 @@ func compareWorker(in chan string, out chan listEntry, ips net.IP) {
 		path := <-in
 		file, err := os.Open(path)
 		evalErr(err, path)
+
 		scnr := bufio.NewScanner(file)
+
 		if strings.HasSuffix(path, "ipset") {
 			out <- scannerIpset(scnr, ips, file)
 		}
+
 		if strings.HasSuffix(path, "netset") {
 			out <- scannerNetset(scnr, ips, file)
 		}
+
 		err0 := file.Close()
 		evalErr(err0, file.Name())
 	}
@@ -71,6 +78,7 @@ func compareWorker(in chan string, out chan listEntry, ips net.IP) {
 
 func outputWorker(in chan string, out chan listEntry, worker *sync.WaitGroup) {
 	worker.Add(1)
+
 	go releaseWorker(in, out)
 
 	for {
@@ -85,11 +93,13 @@ func outputWorker(in chan string, out chan listEntry, worker *sync.WaitGroup) {
 					output.category + " | URL: " + output.url)
 			}
 		}
+
 		if output.release {
 			worker.Done()
 
 			// Due to initial increment of waitgroup to block while executing workers
 			worker.Done()
+
 			return
 		}
 	}
@@ -102,6 +112,7 @@ func releaseWorker(in chan string, out chan listEntry) {
 			tmp.release = true
 			out <- tmp
 		}
+
 		time.Sleep(2 * time.Second)
 	}
 }

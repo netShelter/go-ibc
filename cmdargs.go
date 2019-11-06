@@ -13,6 +13,7 @@ func parseArgs(args []string) (inputIP net.IP) {
 	for index := 0; index < len(args)-1; index++ {
 		incomingIP = args[index+1]
 		inputIP = net.ParseIP(incomingIP)
+
 		if inputIP != nil {
 			return
 		}

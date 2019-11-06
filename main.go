@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	input := parseArgs(os.Args)
+	argset := parseArgs(os.Args)
 	dir := initDownload()
-	checkIPs(dir, input)
+	checkIPs(dir, argset)
 }

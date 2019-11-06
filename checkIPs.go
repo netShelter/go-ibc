@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -13,7 +12,7 @@ import (
 	"time"
 )
 
-func checkIPs(dir string, ips net.IP) {
+func checkIPs(dir string, argset argumentSet) {
 	//Make input and output channel and waitgroup
 	in := make(chan string, 2000)
 	out := make(chan listEntry, 2000)
@@ -27,7 +26,7 @@ func checkIPs(dir string, ips net.IP) {
 	time.Sleep(2 * time.Second)
 	//Start fileworker
 	for i := 0; i < runtime.NumCPU(); i++ {
-		go compareWorker(in, out, ips)
+		go compareWorker(in, out, argset)
 	}
 
 	time.Sleep(2 * time.Second)
@@ -55,7 +54,7 @@ func inputWorker(dir string, in chan string, worker *sync.WaitGroup) {
 	}
 }
 
-func compareWorker(in chan string, out chan listEntry, ips net.IP) {
+func compareWorker(in chan string, out chan listEntry, argset argumentSet) {
 	for {
 		path := <-in
 		file, err := os.Open(path)
@@ -64,11 +63,11 @@ func compareWorker(in chan string, out chan listEntry, ips net.IP) {
 		scnr := bufio.NewScanner(file)
 
 		if strings.HasSuffix(path, "ipset") {
-			out <- scannerIpset(scnr, ips, file)
+			out <- scannerIpset(scnr, argset, file)
 		}
 
 		if strings.HasSuffix(path, "netset") {
-			out <- scannerNetset(scnr, ips, file)
+			out <- scannerNetset(scnr, argset, file)
 		}
 
 		err0 := file.Close()

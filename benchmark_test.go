@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net"
 	"os"
 	"testing"
 )
@@ -9,18 +8,18 @@ import (
 func BenchmarkParsingIPv4(b *testing.B) { //nolint:deadcode
 	b.ReportAllocs()
 
-	var inputIP net.IP
+	var argset argumentSet
 
 	b.ResetTimer()
 
 	for index := 0; index < b.N; index++ {
-		inputIP = parseArgs([]string{os.Args[0], "1.1.1.1"})
+		argset = parseArgs([]string{os.Args[0], "1.1.1.1"})
 	}
 	b.StopTimer()
 
-	result := inputIP
+	result := argset
 
-	if result == nil {
+	if result.inputIP == nil {
 		b.Fail()
 	}
 }
@@ -28,18 +27,18 @@ func BenchmarkParsingIPv4(b *testing.B) { //nolint:deadcode
 func BenchmarkParsingIPv6(b *testing.B) { //nolint:deadcode
 	b.ReportAllocs()
 
-	var inputIP net.IP
+	var argset argumentSet
 
 	b.ResetTimer()
 
 	for index := 0; index < b.N; index++ {
-		inputIP = parseArgs([]string{os.Args[0], "2606:4700:4700::1111"})
+		argset = parseArgs([]string{os.Args[0], "2606:4700:4700::1111"})
 	}
 	b.StopTimer()
 
-	result := inputIP
+	result := argset
 
-	if result == nil {
+	if result.inputIP == nil {
 		b.Fail()
 	}
 }
@@ -61,15 +60,3 @@ func BenchmarkAfterInitialDownload(b *testing.B) { //nolint:deadcode
 		initDownload()
 	}
 }
-
-/*
-func BenchmarkCheckIPParsing(b *testing.B) { //nolint:deadcode
-	b.ReportAllocs()
-	var input ipset
-	parseArgs(&input, []string{os.Args[0], "--ipv4", "1.1.1.1"})
-	dir := initDownload()
-	for index := 0; index < b.N; index++ {
-		checkIPs(dir, &input)
-	}
-}
-*/

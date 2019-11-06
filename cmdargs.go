@@ -7,14 +7,18 @@ import (
 	"runtime"
 )
 
-func parseArgs(args []string) (inputIP net.IP) {
+type argumentSet struct {
+	inputIP net.IP
+}
+
+func parseArgs(args []string) (argset argumentSet) {
 	var incomingIP string
 
 	for index := 0; index < len(args)-1; index++ {
 		incomingIP = args[index+1]
-		inputIP = net.ParseIP(incomingIP)
+		argset.inputIP = net.ParseIP(incomingIP)
 
-		if inputIP != nil {
+		if argset.inputIP != nil {
 			return
 		}
 	}

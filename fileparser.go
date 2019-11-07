@@ -19,8 +19,14 @@ func parseFile(scnr *bufio.Scanner, argset argumentSet, file *os.File) (match li
 				match.maintainer = strings.TrimSpace(strings.ReplaceAll(strings.TrimPrefix(scnr.Text(), "# Maintainer"), ":", ""))
 			}
 
+			if strings.HasPrefix(scnr.Text(), "# Maintainer URL") {
+				match.url = strings.TrimSpace(strings.Replace(strings.TrimPrefix(scnr.Text(), "# Maintainer URL"), ":", "", 1))
+			}
+
 			if strings.HasPrefix(scnr.Text(), "# List source URL") {
-				match.url = strings.TrimSpace(strings.Replace(strings.TrimPrefix(scnr.Text(), "# List source URL"), ":", "", 1))
+				if tmpurl := strings.TrimSpace(strings.Replace(strings.TrimPrefix(scnr.Text(), "# List source URL"), ":", "", 1)); tmpurl != "" {
+					match.url = tmpurl
+				}
 			}
 
 			if strings.HasPrefix(scnr.Text(), "# Category") {

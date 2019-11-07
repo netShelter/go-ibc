@@ -60,11 +60,11 @@ func compareWorker(in chan string, out chan listEntry, argset argumentSet) {
 		scnr := bufio.NewScanner(file)
 
 		if strings.HasSuffix(path, "ipset") {
-			out <- scannerIpset(scnr, argset, file)
+			out <- parserIpset(scnr, argset, file)
 		}
 
 		if strings.HasSuffix(path, "netset") {
-			out <- scannerNetset(scnr, argset, file)
+			out <- parserNetset(scnr, argset, file)
 		}
 
 		err0 := file.Close()

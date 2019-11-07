@@ -2,20 +2,13 @@ package main
 
 import (
 	"bufio"
-	"log"
 	"net"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-func evalErr(err error, args ...string) {
-	if err != nil {
-		log.Fatalln("Error:", err, args)
-	}
-}
-
-func scannerIpset(scnr *bufio.Scanner, argset argumentSet, file *os.File) (match listEntry) {
+func parserIpset(scnr *bufio.Scanner, argset argumentSet, file *os.File) (match listEntry) {
 	match.match = false
 	match.release = false
 
@@ -53,7 +46,7 @@ func scannerIpset(scnr *bufio.Scanner, argset argumentSet, file *os.File) (match
 	return match
 }
 
-func scannerNetset(scnr *bufio.Scanner, argset argumentSet, file *os.File) (match listEntry) {
+func parserNetset(scnr *bufio.Scanner, argset argumentSet, file *os.File) (match listEntry) {
 	match.match = false
 	match.release = false
 

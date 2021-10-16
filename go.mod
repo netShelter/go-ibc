@@ -1,3 +1,3 @@
-module github.com/linux-insideDE/go-ibc
+module github.com/fancytools/go-ibc
 
 go 1.13

@@ -1,17 +1,15 @@
 package main
 
 import (
-	"net"
+	"os"
 )
 
-type ipset struct {
-	ipv4 net.IP
-	ipv6 net.IP
+func main() {
+	argset := parseArgs(os.Args)
+	dir := getBlocklistFilesFromSource()
+	processGivenData(dir, argset)
 }
 
-func main() {
-	input := ipset{}
-	parseArgs(&input)
-	_, dir := initDownload()
-	checkIPs(dir, &input)
+func processGivenData(dir string, argset argumentSet) {
+	startWorker(dir, argset)
 }

@@ -12,38 +12,38 @@ import (
 	"time"
 )
 
-func checkIPs(dir string, ips *ipset) {
-	//Make input and output channel and waitgroup
+func startWorker(dir string, argset argumentSet) {
 	in := make(chan string, 2000)
 	out := make(chan listEntry, 2000)
-	worker := sync.WaitGroup{}
+	workerWG := sync.WaitGroup{}
 
-	worker.Add(1)
+	workerWG.Add(1)
 
-	//Start insertworker
-	inputWorker(dir, in, &worker)
+	inputWorker(dir, in, &workerWG)
 
 	time.Sleep(2 * time.Second)
-	//Start fileworker
+
 	for i := 0; i < runtime.NumCPU(); i++ {
-		go compareWorker(in, out, ips)
+		go compareWorker(in, out, argset)
 	}
 
 	time.Sleep(2 * time.Second)
 
-	//Start output worker
-	go outputWorker(in, out, &worker)
+	go outputWorker(in, out, &workerWG)
 
-	worker.Wait()
+	workerWG.Wait()
 	close(in)
 	close(out)
 }
 
-func inputWorker(dir string, in chan string, worker *sync.WaitGroup) {
-	worker.Add(1)
+func inputWorker(dir string, in chan string, workerWG *sync.WaitGroup) {
+	workerWG.Add(1)
+
 	files, err := ioutil.ReadDir(dir)
 	evalErr(err, dir)
-	defer worker.Done()
+
+	defer workerWG.Done()
+
 	for _, file := range files {
 		if !file.IsDir() && file.Name() != "" {
 			in <- filepath.Join(dir, file.Name())
@@ -51,25 +51,26 @@ func inputWorker(dir string, in chan string, worker *sync.WaitGroup) {
 	}
 }
 
-func compareWorker(in chan string, out chan listEntry, ips *ipset) {
+func compareWorker(in chan string, out chan listEntry, argset argumentSet) {
 	for {
 		path := <-in
 		file, err := os.Open(path)
 		evalErr(err, path)
+
 		scnr := bufio.NewScanner(file)
-		if strings.HasSuffix(path, "ipset") {
-			out <- scannerIpset(scnr, ips, file)
+
+		if strings.HasSuffix(path, "ipset") || strings.HasSuffix(path, "netset") {
+			out <- parseFile(scnr, argset, file)
 		}
-		if strings.HasSuffix(path, "netset") {
-			out <- scannerNetset(scnr, ips, file)
-		}
+
 		err0 := file.Close()
 		evalErr(err0, file.Name())
 	}
 }
 
-func outputWorker(in chan string, out chan listEntry, worker *sync.WaitGroup) {
-	worker.Add(1)
+func outputWorker(in chan string, out chan listEntry, workerWG *sync.WaitGroup) {
+	workerWG.Add(1)
+
 	go releaseWorker(in, out)
 
 	for {
@@ -84,11 +85,13 @@ func outputWorker(in chan string, out chan listEntry, worker *sync.WaitGroup) {
 					output.category + " | URL: " + output.url)
 			}
 		}
+
 		if output.release {
-			worker.Done()
+			workerWG.Done()
 
 			// Due to initial increment of waitgroup to block while executing workers
-			worker.Done()
+			workerWG.Done()
+
 			return
 		}
 	}
@@ -101,6 +104,7 @@ func releaseWorker(in chan string, out chan listEntry) {
 			tmp.release = true
 			out <- tmp
 		}
+
 		time.Sleep(2 * time.Second)
 	}
 }

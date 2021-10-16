@@ -8,7 +8,7 @@ IP Blocklist Checker (IBC) written in Go
 ### Installing and Updating
 
 ```
-go get -u github.com/netShelter/go-ibc
+go get -u github.com/fancytools/go-ibc
 ```
 
 ## Using the tool
